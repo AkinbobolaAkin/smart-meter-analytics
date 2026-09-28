@@ -1,4 +1,0 @@
-# latexmk config. From reports/phase1/:  latexmk proposal.tex
-$pdf_mode = 1;          # pdflatex
-$bibtex_use = 2;        # run biber when needed, clean its files too
-$out_dir = 'build';

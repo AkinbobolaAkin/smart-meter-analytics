@@ -1,6 +1,3 @@
-# datasets
-/datasets
-
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
@@ -222,3 +219,23 @@ __marimo__/
 
 # LaTeX build output
 reports/*/build/
+
+# data (never commit; README documents how to obtain it)
+data/raw/*
+data/interim/*
+data/processed/*
+!data/*/.gitkeep
+
+# LaTeX build artifacts
+reports/**/build/
+*.aux
+*.log
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+*.out
+*.toc
+*.bbl
+*.blg
+*.bcf
+*.run.xml
