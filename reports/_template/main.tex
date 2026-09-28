@@ -1,0 +1,51 @@
+% =============================================================================
+%  Generic report skeleton (reference copy; do not build from here).
+%  To start a phase: copy to reports/phaseN/main.tex and add references.bib.
+% =============================================================================
+\documentclass[11pt,letterpaper]{article}
+\input{../_template/preamble}
+\addbibresource{references.bib}
+
+% ---- Metadata ---------------------------------------------------------------
+\projecttitle[{[SHORT TITLE]}]{[PROJECT TITLE]}  % optional arg = short title for the header
+\phaselabel{[PHASE N \textperiodcentered{} DELIVERABLE]}
+\authors{[AUTHOR 1], [AUTHOR 2]}
+\course{[COURSE]}
+\reportdate{[DATE]}
+
+\begin{document}
+\maketitleblock
+
+\section{[Section]}
+\label{sec:first}
+
+\subsection{[Subsection]}
+
+% ---- Figure pattern: files live in reports/figures/ (graphicspath is set) ----
+% \begin{figure}[htbp]
+%   \centering
+%   \includegraphics[width=\linewidth]{[figure-file]}
+%   \caption{[Caption]}
+%   \label{fig:[key]}
+% \end{figure}
+
+% ---- Table pattern: Y{f} widths must sum to the number of columns ----------
+% \begin{table}[htbp]
+%   \centering
+%   \caption{[Caption]}
+%   \label{tab:[key]}
+%   \begin{tabularx}{\linewidth}{Y{1.2} Y{0.8} Y{1.0}}
+%     \tableheadrow                                   % replaces \toprule
+%     \colhead{[Col 1]} & \colhead{[Col 2]} & \colhead{[Col 3]} \\
+%     \tableheadend                                   % replaces \midrule
+%     {[Cell]} & [Cell] & [Cell] \\   % braces: a rule would read [..] as a width
+%     \bottomrule
+%   \end{tabularx}
+% \end{table}
+
+\section{[Section]}
+\label{sec:second}
+
+\printbibliography[title={References}]
+
+\end{document}

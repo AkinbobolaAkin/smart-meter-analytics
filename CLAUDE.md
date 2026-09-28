@@ -1,69 +1,65 @@
-# Smart Meter Power Consumption Forecasting — Term Project
+# Smart Meter Bill Forecasting: Term Project
 
-## Course context
-UNB Data Analytics, Fall 2026. Team term project, 5 biweekly phases (Problem Definition →
-Data Collection/Prep → EDA/Feature Engineering → Modeling → Insights/Final Report).
-Phase 1 proposal due **Sept 29, 2026**. Full grading breakdown and phase rubrics are in
-`docs/spec/` (see Reference docs below) — check them before finalizing any phase deliverable.
+UNB Data Analytics, Fall 2026. Team project, 5 biweekly phases. Phase 1 proposal due 2026-09-29.
+Spec and rubrics: `docs/spec/`. Check the relevant phase rubric before calling any deliverable done.
 
-Topic #24: **Power Consumption Forecasting Using Smart Meter Data**.
+## Problem (locked)
+Topic #24: Power Consumption Forecasting Using Smart Meter Data.
+- **User:** the household.
+- **Primary task:** at day `d` of a billing month, project the month-end bill for each household,
+  with a prediction interval. Regression, not classification or clustering.
+- **Decision layer:** alert the household if the projected bill exceeds its baseline by more than X%.
+  `d`, X, and the baseline definition are parameters, not constants. Finalize in Phase 4.
+- **Benchmarks:** naive run-rate projection, last month, same month prior year.
+- **Bill = computed proxy** (kWh x published tariff), not a real invoice. Always state this.
+- **Secondary:** pooled vs per-household models. **Stretch:** ToU households in 2013, only if
+  `Tariffs.xlsx` checks out.
 
-## Dataset
-Kaggle "Smart meters in London" (half-hourly household consumption) — **confirmed**: team
-agreed, and instructor's "must be messy" requirement is satisfied.
-
-## Problem statement
-**Locked**: household usage / bill forecasting. This is a prediction task — regression on
-future consumption (and/or projected bill amount), not classification or clustering. Folder
-structure and modeling code below assume this.
-
-## Working style / what "done" looks like
-This project is also a data-engineering learning exercise, not just a grade target. Priorities,
-in order:
-1. **Reproducibility** — anyone should be able to re-run the pipeline from raw data to results
-   with one command per stage. No manual, unrecorded steps.
-2. **Clean project structure** — clear separation of raw data, processing code, and outputs
-   (see layout below).
-3. **Defensible modeling choices** — every method choice should have a stated reason, not just
-   "it worked." Flag assumptions and limitations explicitly in code comments / notebooks.
-
-When implementing something, prefer scripts/modules over one-off notebook cells for anything
-that needs to be re-run. Notebooks are fine for exploration; promote reusable logic into `src/`.
+## Data facts (verified, do not re-derive or guess)
+- Source: Kaggle "Smart meters in London" / UK Power Networks London Datastore, CC BY 4.0.
+- 167.8M half-hourly rows, 112 CSV files, 5,566 household IDs (5,561 with a valid on-grid reading),
+  Nov 2011 to Feb 2014. No duplicate (LCLid, tstp) keys, no negative readings.
+- `energy(kWh/hh)` loads as VARCHAR: 5,560 `'Null'` strings, 5,521 of them on 2012-12-18, all
+  off the half-hour grid. Drop and log them.
+- 0.27% of slots missing but clustered. 231 households have a zero run >= 1 day, 52 >= 30 days.
+- Most households start Apr-Jul 2012, and 4,987 run to 2014-02-28. Usable window is shorter
+  than the full span.
+- Tariffs (London Datastore page): Std = flat 14.228 p/kWh. ToU (~1,100 households, 2013 only):
+  Low 3.99, Normal 11.76, High 67.20 p/kWh. Half-hourly band schedule is in `Tariffs.xlsx`.
+- **Still to verify:** `Tariffs.xlsx` row count (17,520 expected), presence of High rows,
+  timestamp convention vs meter `tstp`, and the tariff column name in `informations_households.csv`.
+- Source of truth is `data/raw/halfhourly_dataset/`. `daily_dataset*` and `hhblock_dataset/` are
+  third-party aggregates; do not use them as inputs.
+- Weather (`weather_hourly_darksky.csv`) is available as a covariate. Causal weather modeling
+  is out of scope.
 
 ## Repo layout
 ```
-data/
-  raw/            # untouched source data, never edited in place
-  interim/        # partially cleaned intermediate data
-  processed/      # analysis-ready datasets
-notebooks/        # exploration, EDA, one-off analysis
-src/
-  data/           # ingestion + cleaning scripts
-  features/       # feature engineering
-  models/         # training + evaluation code
-  viz/            # reusable plotting helpers
-reports/
-  phase1/ phase2/ ... # phase deliverables (proposal, EDA report, etc.)
-docs/
-  spec/           # course spec + phase requirement PDFs/notes
+data/{raw,interim,processed}/   gitignored; never edit raw in place
+notebooks/                      exploration only, numbered
+src/smart_meter_analytics/{data,features,models,viz}/
+configs/                        paths and parameters live here, nowhere else
+reports/                        see reports/CLAUDE.md
+docs/spec/                      course spec and rubrics
+tests/
 ```
+Import as `smart_meter_analytics`. Logic goes in `src/`; notebooks call it.
 
-## Conventions
-- Python, standard data stack (pandas, numpy, scikit-learn, matplotlib/seaborn as needed).
-- Config (file paths, params) lives in one place, not hardcoded across scripts.
-- Commit raw data pointers/scripts, not large raw files, unless the team agrees otherwise.
-- Document every cleaning/preprocessing decision (what was dropped/imputed and why) — this is
-  an explicit Phase 2 deliverable requirement.
+## Working rules
+- Raw data is read-only. Every transformation is a script, one command per stage.
+- Never commit data. Commit scripts and a README section on how to obtain it.
+- Time-based splits only, never random. Document every cleaning decision (what, how many rows, why).
+- No hardcoded paths or magic numbers; use `configs/`.
+- Every modeling choice needs a stated reason. Flag assumptions and limitations in comments.
+- `profile_data.py` was lost. Regenerate from `reports/data_quality/profile_report.md`,
+  which defines each metric.
 
-## How to work with me on this
-- Explain reasoning, don't just hand over finished code, unless explicitly asked to "just write it."
-- Flag anywhere an approach diverges from how this would be done in an industry data
-  engineering/analytics setting, and why.
-- Check deliverables against the phase rubric before calling something done.
-- I have a backend dev background (Java/Spring, SQL) — comfortable with code and databases,
-  newer to the applied ML/analytics side, so lean into that gap rather than the coding basics.
+## How to work with me
+- I write the report prose. You review, critique, and suggest; do not rewrite wholesale.
+- Explain reasoning and flag where this differs from industry practice.
+- Direct and concise. Push back if my reasoning does not hold up.
+- I am strong on backend and SQL, newer to applied ML and statistics; spend effort there.
+- Ask before adding dependencies or restructuring folders.
 
-## Current status
-Phase 1 (problem definition) in progress. Dataset and problem statement (bill forecasting)
-are locked. Next: draft the Phase 1 proposal (problem statement, objectives, data source
-description, feasibility, scope) — due Sept 29, 2026. No pipeline code yet.
+## Status
+Phase 1: topic and data sources locked. Structure done. No pipeline code yet.

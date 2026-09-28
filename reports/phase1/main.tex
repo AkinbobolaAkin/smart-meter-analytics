@@ -1,0 +1,114 @@
+% =============================================================================
+%  Phase 1: Problem Definition & Data Source Identification (project proposal)
+%  Limit: 2-3 pages excluding references. Rubric: docs/spec/phase1_details.pdf
+%  Build: latexmk -pdf -outdir=build main.tex
+% =============================================================================
+\documentclass[11pt,letterpaper]{article}
+\input{../_template/preamble}
+\addbibresource{references.bib}
+
+% ---- Metadata ---------------------------------------------------------------
+\projecttitle[Power Consumption Forecasting]{Power Consumption Forecasting Using Smart Meter Data}
+\phaselabel{Phase 1 \textperiodcentered{} Project Proposal}
+\authors{[AUTHOR 1], [AUTHOR 2], [AUTHOR 3], [AUTHOR 4]}
+\course{Data Analytics, Master of Computer Science, University of New Brunswick}
+\reportdate{[DATE]}
+
+\begin{document}
+\maketitleblock
+
+% Submission checklist (rubric, "Deliverable & Submission Requirements"):
+%   - Clear project title and the names of ALL team members (title block).
+%   - Headings match the five proposal components (sections below).
+%   - Cite external datasets, APIs, reports used to justify the project.
+%   - Concise, professional writing.
+%   - Clearly distinguish CONFIRMED data access from PLANNED / potential sources.
+%   - 2-3 pages excluding references/appendices. One proposal per team.
+
+
+% =============================================================================
+\section{Problem Statement}
+\label{sec:problem}
+% Rubric requires:
+%   - The business, organizational, or research problem being investigated.
+%   - Context: why the problem matters.
+%   - The population, process, customers, organization, or system studied.
+%   - The problem stated in a specific, MEASURABLE way, not a broad topic.
+% Quality standard (strong): specific, meaningful, measurable problem.
+
+
+% =============================================================================
+\section{Project Objectives \& Analytics Goal}
+\label{sec:objectives}
+% Rubric requires:
+%   - 2-4 specific objectives (list below).
+%   - The primary analytics task (prediction, classification, clustering,
+%     visualization, anomaly detection, or other).
+%   - The target/outcome to be predicted or explained, if applicable.
+%   - What a successful project would produce or enable.
+% Quality standard (strong): clear task and intended outcome.
+
+\begin{enumerate}
+  \item {[Objective 1]}
+  \item {[Objective 2]}
+  % \item {[Objective 3]}
+  % \item {[Objective 4]}
+\end{enumerate}
+
+
+% =============================================================================
+\section{Data Source Identification}
+\label{sec:sources}
+% Rubric requires, for each main data source:
+%   - What information it contains and why it is relevant to the problem.
+%   - Its type: internal, external, API, sensor/device, survey, transactional,
+%     public/open data, or other.
+%   - Expected format and approximate size or time period, when known.
+% Status column: mark each source Confirmed or Planned (submission requirement).
+% Quality standard (strong): relevant, credible, feasible sources.
+
+\begin{table}[htbp]
+  \centering
+  \caption{[Caption]}
+  \label{tab:sources}
+  % Y{f} widths must sum to 5 (the number of columns).
+  \begin{tabularx}{\linewidth}{Y{0.95} Y{0.70} Y{1.45} Y{1.20} Y{0.70}}
+    \tableheadrow
+    \colhead{Source} & \colhead{Type} & \colhead{What it provides}
+      & \colhead{Access / feasibility} & \colhead{Status} \\
+    \tableheadend
+    % Brace a cell that starts with [ right after a rule: rules take an optional [width].
+    {[Source]} & [Type] & [What it provides] & [Access / feasibility] & [Status] \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+
+% =============================================================================
+\section{Data Access, Quality \& Feasibility}
+\label{sec:feasibility}
+% Rubric requires:
+%   - How the data will be obtained; whether access is already available.
+%   - Obvious issues: missing values, inconsistent records, limited
+%     observations, bias, data integration challenges.
+%   - Privacy, security, consent, licensing, or ethical considerations.
+%   - Why the sources are sufficient, or what additional data may be needed.
+% Quality standard (strong): access, quality, ethics, and constraints
+% considered; no major data risk overlooked.
+
+
+% =============================================================================
+\section{Preliminary Project Scope}
+\label{sec:scope}
+% Rubric requires:
+%   - What the project WILL and WILL NOT attempt.
+%   - Expected users or stakeholders of the final analysis.
+%   - Expected final outputs (dashboard, analytical report, predictive model,
+%     decision-support tool, ...).
+
+
+% =============================================================================
+% References do not count toward the page limit.
+\printbibliography[title={References}]
+
+\end{document}
