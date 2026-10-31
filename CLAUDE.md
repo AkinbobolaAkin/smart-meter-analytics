@@ -19,13 +19,16 @@ Topic #24: Power Consumption Forecasting Using Smart Meter Data.
 - Source: Kaggle "Smart meters in London" / UK Power Networks London Datastore, CC BY 4.0.
 - 167.8M half-hourly rows, 112 CSV files, 5,566 household IDs (5,561 with a valid on-grid reading),
   Nov 2011 to Feb 2014. No duplicate (LCLid, tstp) keys, no negative readings.
-- `energy(kWh/hh)` loads as VARCHAR: 5,560 `'Null'` strings, 5,521 of them on 2012-12-18, all
-  off the half-hour grid. Drop and log them.
+- `energy(kWh/hh)` loads as VARCHAR, whitespace-padded (`' 0 '`): trim before casting.
+  5,560 `'Null'` strings, 5,521 of them on 2012-12-18, all off the half-hour grid. Drop and log them.
+- The Phase 1 report says 5,567 households; the profiled count (5,566) is correct. Use it from Phase 2 on.
 - 0.27% of slots missing but clustered. 231 households have a zero run >= 1 day, 52 >= 30 days.
 - Most households start Apr-Jul 2012, and 4,987 run to 2014-02-28. Usable window is shorter
   than the full span.
 - Tariffs (London Datastore page): Std = flat 14.228 p/kWh. ToU (~1,100 households, 2013 only):
   Low 3.99, Normal 11.76, High 67.20 p/kWh. Half-hourly band schedule is in `Tariffs.xlsx`.
+- **`Tariffs.xlsx` is not in `data/raw/`** (not part of the Kaggle download; get it from the
+  London Datastore page), although the Phase 1 report lists it as downloaded and checked.
 - **Still to verify:** `Tariffs.xlsx` row count (17,520 expected), presence of High rows,
   timestamp convention vs meter `tstp`, and the tariff column name in `informations_households.csv`.
 - Source of truth is `data/raw/halfhourly_dataset/`. `daily_dataset*` and `hhblock_dataset/` are
@@ -51,8 +54,9 @@ Import as `smart_meter_analytics`. Logic goes in `src/`; notebooks call it.
 - Time-based splits only, never random. Document every cleaning decision (what, how many rows, why).
 - No hardcoded paths or magic numbers; use `configs/`.
 - Every modeling choice needs a stated reason. Flag assumptions and limitations in comments.
-- `profile_data.py` was lost. Regenerate from `reports/data_quality/profile_report.md`,
-  which defines each metric.
+- The profiling script is `src/smart_meter_analytics/data/profile.py` (formerly
+  `checks/profile_data.py`). Its output is `reports/data_quality/profile_report.md`, which defines
+  each metric.
 
 ## How to work with me
 - I write the report prose. You review, critique, and suggest; do not rewrite wholesale.
@@ -62,4 +66,12 @@ Import as `smart_meter_analytics`. Logic goes in `src/`; notebooks call it.
 - Ask before adding dependencies or restructuring folders.
 
 ## Status
-Phase 1: topic and data sources locked. Structure done. No pipeline code yet.
+Phase 1: submitted (`docs/spec/phase1_report.pdf`). Topic and data sources locked.
+**Phase 2 (Data Collection & Preparation): in progress.** Rubric: `docs/spec/phase2_details.pdf`.
+- Stage 1 (ingest): `src/smart_meter_analytics/data/seed.py` converts the raw half-hourly CSVs to `data/interim/halfhourly.parquet`
+  (`LCLid`, `tstp` TIMESTAMP, `kwh` DOUBLE, `energy_raw` kept only to log rejects). Output verified:
+  167,817,021 rows, 5,566 households, 5,560 NULL `kwh`, matching the profile report.
+- `seed.py` and `profile.py` still hardcode paths and thresholds as module constants; move them
+  to `configs/` (rule above).
+- Next: cleaning stage (drop/log NULLs, missing-slot grid, zero runs), daily aggregation, README
+  preprocessing write-up.

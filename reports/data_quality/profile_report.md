@@ -3,6 +3,7 @@
 - Generated: 2026-09-25 23:53 by `checks/profile_data.py`
 - DuckDB 1.5.5; runtime 353s
 - Inputs: `datasets/halfhourly_dataset/*.csv` (112 files), `datasets/weather_hourly_darksky.csv`, `datasets/informations_households.csv`
+- Note: paths above are from the original run. The script is now `src/smart_meter_analytics/data/profile.py` and the inputs are under `data/raw/`.
 
 ## Key findings
 

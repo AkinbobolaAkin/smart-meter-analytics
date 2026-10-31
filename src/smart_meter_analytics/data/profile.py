@@ -1,11 +1,11 @@
 """Data-quality profile of the Kaggle "Smart meters in London" dataset.
 
-Reads the CSVs in place with DuckDB. Nothing under datasets/ is written; intermediate
+Reads the CSVs in place with DuckDB. Nothing under data/raw/ is written; intermediate
 tables live in a throwaway DuckDB file in the system temp directory.
-Prints a Markdown summary and saves it to checks/profile_report.md.
+Prints a Markdown summary and saves it to reports/data_quality/profile_report.md.
 
 Run from anywhere:
-    uv run --group dev python checks/profile_data.py
+    uv run --group dev python src/smart_meter_analytics/data/profile.py
 """
 
 from __future__ import annotations
@@ -18,12 +18,12 @@ from pathlib import Path
 
 import duckdb
 
-ROOT = Path(__file__).resolve().parents[1]
-DATA = ROOT / "datasets"
+ROOT = Path(__file__).resolve().parents[3]  # repo root
+DATA = ROOT / "data" / "raw"
 HH_GLOB = DATA / "halfhourly_dataset" / "*.csv"
 WEATHER_CSV = DATA / "weather_hourly_darksky.csv"
 INFO_CSV = DATA / "informations_households.csv"
-REPORT_PATH = Path(__file__).resolve().parent / "profile_report.md"
+REPORT_PATH = ROOT / "reports" / "data_quality" / "profile_report.md"
 
 # Thresholds
 ZERO_RUN_SLOTS = 48  # one full day of consecutive zero readings
@@ -159,10 +159,10 @@ def main() -> None:
     header = [
         "# Smart meters in London: data-quality profile",
         "",
-        f"- Generated: {datetime.now():%Y-%m-%d %H:%M} by `checks/profile_data.py`",
+        f"- Generated: {datetime.now():%Y-%m-%d %H:%M} by `src/smart_meter_analytics/data/profile.py`",
         f"- DuckDB {duckdb.__version__}; runtime {time.perf_counter() - start:,.0f}s",
-        f"- Inputs: `datasets/halfhourly_dataset/*.csv` ({n_files} files), "
-        "`datasets/weather_hourly_darksky.csv`, `datasets/informations_households.csv`",
+        f"- Inputs: `data/raw/halfhourly_dataset/*.csv` ({n_files} files), "
+        "`data/raw/weather_hourly_darksky.csv`, `data/raw/informations_households.csv`",
     ]
     text = r.render(header)
     REPORT_PATH.write_text(text, encoding="utf-8")
