@@ -61,5 +61,5 @@ so the README write-up can quote the numbers. Thresholds live in one config cell
 
 ## 11. Documentation & packaging
 - [x] Cleaning log table (step, rows before, rows after, reason): `docs/phase2_documentation_tables.md`
-- [ ] README preprocessing section: sources, cleaning steps with justifications, challenges and solutions
+- [~] README preprocessing section: sources, cleaning steps with justifications, challenges and solutions (draft in README, to be rewritten)
 - [ ] Package: raw data, processed data, notebook + `seed.py`, README

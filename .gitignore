@@ -225,6 +225,8 @@ data/raw/*
 data/interim/*
 data/processed/*
 !data/*/.gitkeep
+# Small tariff file (245 KB, CC BY 4.0) is committed: the London Datastore blocks scripted downloads
+!data/raw/Tariffs.xlsx
 
 # LaTeX build artifacts
 reports/**/build/

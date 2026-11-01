@@ -30,13 +30,15 @@ report in Phase 2 deliverables.
   than the full span.
 - Tariffs (London Datastore page): Std = flat 14.228 p/kWh. ToU (~1,100 households, 2013 only):
   Low 3.99, Normal 11.76, High 67.20 p/kWh. Half-hourly band schedule is in `Tariffs.xlsx`.
-- `Tariffs.xlsx` is now in `data/raw/` (downloaded from the London Datastore page; not part of
-  the Kaggle download).
+- Raw data download is automated in the notebook: `kagglehub` puts Kaggle version 21 in `data/raw/kaggle/`
+  (no login needed; kagglehub owns that folder and errors if it holds other files). `Tariffs.xlsx` is committed
+  at `data/raw/Tariffs.xlsx` (gitignore exception) because the London Datastore returns 403 to scripts. Half-hourly CSVs are nested:
+  `data/raw/kaggle/halfhourly_dataset/halfhourly_dataset/block_*.csv`.
 - `informations_households.csv` columns: `LCLid`, `stdorToU`, `Acorn`, `Acorn_grouped`, `file`.
   Tariff column is `stdorToU`. Unknown ACORN appears as `ACORN-` (and possibly `ACORN-U`).
 - **Still to verify:** `Tariffs.xlsx` row count (17,520 expected), presence of High rows,
   timestamp convention vs meter `tstp`, and the tariff column name in `informations_households.csv`.
-- Source of truth is `data/raw/halfhourly_dataset/`. `daily_dataset*` and `hhblock_dataset/` are
+- Source of truth is the half-hourly CSVs under `data/raw/kaggle/`. `daily_dataset*` and `hhblock_dataset/` are
   third-party aggregates; do not use them as inputs.
 - Weather (`weather_hourly_darksky.csv`) is available as a covariate. Causal weather modeling
   is out of scope.
@@ -61,7 +63,7 @@ into `src/` modules is optional later (Phase 3+), not a Phase 2 task.
 - Raw data is read-only. Every transformation is code (seed.py or the notebook), never manual edits.
 - Notebook rules: heavy steps write Parquet to `data/interim/` and later cells read it back, so a
   kernel restart does not force a full rerun. The notebook must pass Restart & Run All before submission.
-- Never commit data. Commit scripts and a README section on how to obtain it.
+- Never commit data (only exception: `data/raw/Tariffs.xlsx`). Commit scripts and a README section on how to obtain it.
 - Time-based splits only, never random. Document every cleaning decision (what, how many rows, why).
 - No magic numbers scattered through cells: paths and thresholds live in the notebook's first config cell.
 - Every modeling choice needs a stated reason. Flag assumptions and limitations in comments.
