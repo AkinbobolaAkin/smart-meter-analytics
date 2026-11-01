@@ -15,7 +15,10 @@ Topic #24: Power Consumption Forecasting Using Smart Meter Data.
 - **Secondary:** pooled vs per-household models. **Stretch:** ToU households in 2013, only if
   `Tariffs.xlsx` checks out.
 
-## Data facts (verified, do not re-derive or guess)
+## Data facts (verified in Phase 1, do not guess)
+Phase 2 re-derives these from scratch in the notebook and reports its own numbers. Use this list
+to cross-check the notebook's results, not as a substitute for them. Do not quote the Phase 1 profile
+report in Phase 2 deliverables.
 - Source: Kaggle "Smart meters in London" / UK Power Networks London Datastore, CC BY 4.0.
 - 167.8M half-hourly rows, 112 CSV files, 5,566 household IDs (5,561 with a valid on-grid reading),
   Nov 2011 to Feb 2014. No duplicate (LCLid, tstp) keys, no negative readings.
@@ -27,8 +30,10 @@ Topic #24: Power Consumption Forecasting Using Smart Meter Data.
   than the full span.
 - Tariffs (London Datastore page): Std = flat 14.228 p/kWh. ToU (~1,100 households, 2013 only):
   Low 3.99, Normal 11.76, High 67.20 p/kWh. Half-hourly band schedule is in `Tariffs.xlsx`.
-- **`Tariffs.xlsx` is not in `data/raw/`** (not part of the Kaggle download; get it from the
-  London Datastore page), although the Phase 1 report lists it as downloaded and checked.
+- `Tariffs.xlsx` is now in `data/raw/` (downloaded from the London Datastore page; not part of
+  the Kaggle download).
+- `informations_households.csv` columns: `LCLid`, `stdorToU`, `Acorn`, `Acorn_grouped`, `file`.
+  Tariff column is `stdorToU`. Unknown ACORN appears as `ACORN-` (and possibly `ACORN-U`).
 - **Still to verify:** `Tariffs.xlsx` row count (17,520 expected), presence of High rows,
   timestamp convention vs meter `tstp`, and the tariff column name in `informations_households.csv`.
 - Source of truth is `data/raw/halfhourly_dataset/`. `daily_dataset*` and `hhblock_dataset/` are
@@ -39,20 +44,26 @@ Topic #24: Power Consumption Forecasting Using Smart Meter Data.
 ## Repo layout
 ```
 data/{raw,interim,processed}/   gitignored; never edit raw in place
-notebooks/                      exploration only, numbered
+notebooks/                      Phase 2 cleaning lives here (data_preparation.ipynb)
 src/smart_meter_analytics/{data,features,models,viz}/
-configs/                        paths and parameters live here, nowhere else
+configs/                        empty for now; Phase 2 uses a config cell instead
 reports/                        see reports/CLAUDE.md
 docs/spec/                      course spec and rubrics
 tests/
 ```
-Import as `smart_meter_analytics`. Logic goes in `src/`; notebooks call it.
+Import as `smart_meter_analytics`.
+Phase 2 is notebook-first by team choice: everything from CSV-to-Parquet conversion through
+cleaning, aggregation and integration happens in `notebooks/data_preparation.ipynb`
+(raw copy: `data/interim/halfhourly_raw.parquet`). `seed.py` is superseded by the notebook. Moving logic
+into `src/` modules is optional later (Phase 3+), not a Phase 2 task.
 
 ## Working rules
-- Raw data is read-only. Every transformation is a script, one command per stage.
+- Raw data is read-only. Every transformation is code (seed.py or the notebook), never manual edits.
+- Notebook rules: heavy steps write Parquet to `data/interim/` and later cells read it back, so a
+  kernel restart does not force a full rerun. The notebook must pass Restart & Run All before submission.
 - Never commit data. Commit scripts and a README section on how to obtain it.
 - Time-based splits only, never random. Document every cleaning decision (what, how many rows, why).
-- No hardcoded paths or magic numbers; use `configs/`.
+- No magic numbers scattered through cells: paths and thresholds live in the notebook's first config cell.
 - Every modeling choice needs a stated reason. Flag assumptions and limitations in comments.
 - The profiling script is `src/smart_meter_analytics/data/profile.py` (formerly
   `checks/profile_data.py`). Its output is `reports/data_quality/profile_report.md`, which defines
@@ -71,7 +82,6 @@ Phase 1: submitted (`docs/spec/phase1_report.pdf`). Topic and data sources locke
 - Stage 1 (ingest): `src/smart_meter_analytics/data/seed.py` converts the raw half-hourly CSVs to `data/interim/halfhourly.parquet`
   (`LCLid`, `tstp` TIMESTAMP, `kwh` DOUBLE, `energy_raw` kept only to log rejects). Output verified:
   167,817,021 rows, 5,566 households, 5,560 NULL `kwh`, matching the profile report.
-- `seed.py` and `profile.py` still hardcode paths and thresholds as module constants; move them
-  to `configs/` (rule above).
-- Next: cleaning stage (drop/log NULLs, missing-slot grid, zero runs), daily aggregation, README
-  preprocessing write-up.
+- Progress is tracked in `docs/phase2_checklist.md` (ordered by the rubric; also the README outline).
+  Tick items off there as they are completed.
+- Next: config cell and first look at the data (checklist section 2).
