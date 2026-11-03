@@ -1,0 +1,187 @@
+% =============================================================================
+%  Phase 2: Data Collection & Preparation (preprocessing documentation)
+%  Limit: 1-2 pages or a well-structured README. Rubric: docs/spec/phase2_details.pdf
+%  Source text: reports/phase2_report.md. Numbers verified against
+%  notebooks/data_preparation.ipynb and the Parquet outputs.
+%  Lines marked "% CHECK:" are review notes for the authors, not report text.
+%  Build: latexmk -pdf -outdir=build main.tex
+% =============================================================================
+\documentclass[11pt,letterpaper]{article}
+\input{../_template/preamble}
+\addbibresource{references.bib}
+
+% ---- Metadata ---------------------------------------------------------------
+\projecttitle[Bill Forecasting]{Household Electricity Consumption and Bill Forecasting}
+\phaselabel{Phase 2 \textperiodcentered{} Data Collection \& Preparation}
+\authors{Akinbobola Akin (3784664), Adejuwon Oluwasegun Isaac (3806766), Edehi Andrew Igue (3778767)}
+\course{TME6014 -- Data Analytics}
+\reportdate{\today}
+
+\begin{document}
+\maketitleblock
+
+% =============================================================================
+\section{Data Collection}
+\label{sec:collection}
+
+The project uses the \emph{Smart Meters in London} dataset, originating from
+the Low Carbon London project. The dataset contains half-hourly
+electricity consumption readings collected between November 2011 and
+February 2014. It was downloaded from Kaggle~\cite{kaggle_smartmeters}
+using Python's kagglehub library (version 21 of the dataset). The
+downloaded files include 112 electricity consumption CSV files,
+household information, weather observations, and UK bank holiday
+records. Electricity tariff information was obtained from the London
+Datastore~\cite{datastore_smartmeters} through Tariffs.xlsx, included in the project repository.
+% CHECK: rubric asks for each source's URL, access method, description and
+% retrieval date. Retrieval date is only in the bib (2026-11-01, from file
+% timestamps; confirm). Weather (Dark Sky), household and holiday files have
+% no description of their own.
+
+The original dataset contained \textbf{167,817,021 readings from 5,566
+households}. DuckDB was used to process the large dataset efficiently,
+while CSV files were converted to Parquet format for improved storage
+and query performance.
+
+% =============================================================================
+\section{Data Preprocessing}
+\label{sec:preprocessing}
+
+\subsection{Data Acquisition Validation}
+\label{sec:validation}
+
+The downloaded CSV files were examined for readability, column
+consistency, and record integrity. After conversion to Parquet, row
+counts were compared to confirm that all 167,817,021 records were
+preserved. Initial profiling also examined household identifiers,
+timestamps, and electricity consumption values.
+
+\subsection{Missing Data Handling}
+\label{sec:missing}
+
+Initial validation identified 5,560 records containing invalid Null
+energy readings, which were removed. Missing observations were
+subsequently detected by comparing available readings against the
+expected 30-minute intervals, revealing 456,658 missing intervals
+(0.271\%). Extended zero-consumption periods lasting at least 24 hours
+were also treated as missing.
+
+A \textbf{90\% monthly coverage threshold} was adopted to exclude
+insufficiently complete household-months. Short gaps of up to two hours
+were filled using linear interpolation, while remaining gaps were
+estimated using household-specific average consumption for the
+corresponding half-hour period within the same month. The final cleaned
+dataset contained 99.844\% original readings, 0.012\% interpolated values,
+and 0.145\% household-profile estimates.
+% CHECK: the notebook also drops partial first/last months regardless of
+% coverage (most of the ~12,000 months removed), and 13 households
+% (5,561 -> 5,548) drop out entirely. Neither is stated here.
+
+\subsection{Duplicate Removal}
+\label{sec:duplicates}
+
+Duplicate records were checked using the combination of household
+identifier (LCLid) and timestamp (tstp). No duplicate household-time
+records were found; therefore, no duplicate removal was necessary.
+
+\subsection{Outlier Detection \& Treatment}
+\label{sec:outliers}
+
+Outliers were assessed using physical consumption limits and
+household-specific usage patterns. No negative readings or values
+exceeding the selected threshold of 11.5~kWh per half-hour were
+identified. A household-level comparison using ten times the
+99th-percentile consumption identified 34 unusual readings across 14
+households. These were retained because they remained physically
+plausible and could represent genuine high-consumption events.
+
+\subsection{Data Type Correction}
+\label{sec:types}
+
+Electricity consumption values were converted from text to numerical
+(DOUBLE) format, and the energy column was renamed kwh. Timestamp
+fields were validated as temporal values, while household identifiers
+were checked for consistency. Removing invalid records reduced the
+initial dataset to 167,811,461 valid observations.
+
+\subsection{Formatting \& Standardization}
+\label{sec:formatting}
+
+Timestamps were standardized using UTC/GMT conventions, ensuring
+consistent 30-minute intervals without daylight-saving adjustments.
+% CHECK: the notebook does not convert timestamps; it verifies they are
+% already UTC/GMT (48 readings per household on every clock-change day).
+% "Standardized" overstates what was done.
+Inconsistent ACORN category labels (ACORN-U and ACORN-) were
+standardized as Unknown. Incorrectly formatted bank holiday dates were
+corrected, and column names were standardized to improve readability and
+consistency across datasets.
+% CHECK: the notebook also adds two missing December 2011 holidays
+% (2011-12-26, 2011-12-27); six swapped dates were corrected.
+
+\subsection{Categorical Data Encoding}
+\label{sec:encoding}
+
+Categorical variables were converted into numerical representations
+suitable for machine learning. Tariff categories were encoded using
+binary indicators, while ACORN socioeconomic classifications were
+transformed using one-hot encoding. Original categorical values were
+retained for interpretation.
+% CHECK: only acorn_group (4 groups) is one-hot encoded; the detailed
+% acorn category stays text.
+
+\subsection{Feature Scaling / Normalization}
+\label{sec:scaling}
+
+Feature scaling was intentionally deferred to the modelling phase. This
+allows scaling parameters to be estimated using only the appropriate
+training data, preventing data leakage and preserving the original
+measurement units during preprocessing.
+
+\subsection{Data Integration}
+\label{sec:integration}
+
+Cleaned electricity readings were aggregated into daily and monthly
+consumption records. Household characteristics, daily weather summaries,
+and bank holiday indicators were integrated into the daily dataset.
+Monthly electricity costs were estimated using a standard tariff of
+\pounds 0.14228 per kWh. These estimates provide consistent billing targets but
+do not represent actual invoices for households using time-of-use
+tariffs.
+% CHECK: the cost is a proxy for every household, not only ToU ones
+% (no standing charge or VAT). As written, it implies Std households'
+% figures are real invoices.
+
+% =============================================================================
+\section{Challenges and Solutions}
+\label{sec:challenges}
+
+The principal challenge was processing over 167 million records without
+excessive memory consumption. DuckDB and Parquet addressed this through
+efficient SQL-based processing and compressed columnar storage.
+Additional challenges included invalid readings, missing intervals,
+extended zero-consumption periods, inconsistent categorical labels, and
+incorrect holiday dates. These were addressed through validation,
+coverage-based filtering, interpolation, household-profile estimation,
+and formatting corrections. Minor gaps in weather observations were
+retained because their effect on daily averages was considered
+negligible.
+
+% =============================================================================
+\section{Final Dataset and Validation}
+\label{sec:final}
+
+The preprocessing pipeline produced cleaned half-hourly, daily, and
+monthly Parquet datasets. The cleaned half-hourly dataset contains
+\textbf{155,510,640 records from 5,548 households}, covering 106,225
+household-months. The daily dataset contains 3,239,805 household-day
+records.
+
+Final quality checks confirmed the absence of duplicate household-time
+records, missing or negative energy values, and off-grid timestamps. The
+resulting datasets provide a consistent foundation for electricity
+consumption analysis and monthly bill forecasting.
+
+\printbibliography[title={References}]
+
+\end{document}
