@@ -177,11 +177,44 @@ monthly Parquet datasets. The cleaned half-hourly dataset contains
 household-months. The daily dataset contains 3,239,805 household-day
 records.
 
+Appendix~\ref{app:outputs} lists every output file.
+
 Final quality checks confirmed the absence of duplicate household-time
 records, missing or negative energy values, and off-grid timestamps. The
 resulting datasets provide a consistent foundation for electricity
 consumption analysis and monthly bill forecasting.
 
 \printbibliography[title={References}]
+
+% =============================================================================
+\appendix
+\section{Output Files}
+\label{app:outputs}
+
+Files written by \code{notebooks/data\_preparation.ipynb}. Intermediate files are in
+\code{data/interim/}; model-ready files are in \code{data/processed/}.
+
+\begin{table}[h]
+  \centering
+  \caption{Output files.}
+  \label{tab:outputs}
+  \small
+  % Y{f} widths must sum to 2 (the number of Y columns; Rows is fixed width).
+  \begin{tabularx}{\linewidth}{Y{0.8} >{\raggedleft\arraybackslash}p{2cm} Y{1.2}}
+    \tableheadrow
+    \colhead{File} & \colhead{Rows} & \colhead{Contents} \\
+    \tableheadend
+    \multicolumn{3}{l}{\textit{\code{data/interim/}}} \\
+    \code{halfhourly\_raw.parquet} & 167,817,021 & CSVs converted to Parquet unchanged (energy still text) \\
+    \code{halfhourly\_typed.parquet} & 167,811,461 & \code{Null} rows dropped; energy cast to \code{kwh} (\code{DOUBLE}) \\
+    \code{halfhourly\_grid.parquet} & 168,268,119 & Every expected half hour per household; missing slots have \code{kwh} = NULL \\
+    \code{halfhourly\_clean.parquet} & 155,510,640 & Kept months only, all gaps filled; \code{status} marks each value as real, interpolated or profile-filled \\
+    \multicolumn{3}{l}{\textit{\code{data/processed/}}} \\
+    \code{daily.parquet} & 3,239,805 & Daily kWh and cost, real and filled slot counts, tariff, ACORN, temperature, holiday flag \\
+    \code{monthly.parquet} & 106,225 & One row per household-month: kWh, bill, days, mean temperature, filled slots \\
+    \code{monthly\_encoded.parquet} & 106,225 & Monthly table plus 0/1 columns for tariff and ACORN group \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
 
 \end{document}

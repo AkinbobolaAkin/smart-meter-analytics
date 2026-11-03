@@ -126,7 +126,26 @@ monthly Parquet datasets. The cleaned half-hourly dataset contains
 household-months. The daily dataset contains 3,239,805 household-day
 records.
 
+Appendix A lists every output file.
+
 Final quality checks confirmed the absence of duplicate household-time
 records, missing or negative energy values, and off-grid timestamps. The
 resulting datasets provide a consistent foundation for electricity
 consumption analysis and monthly bill forecasting.
+
+## Appendix A. Output Files
+
+Files written by `notebooks/data_preparation.ipynb`. Intermediate files
+are in `data/interim/`; model-ready files are in `data/processed/`.
+
+**Table 1. Output files.**
+
+| File | Rows | Contents |
+|---|---:|---|
+| `interim/halfhourly_raw.parquet` | 167,817,021 | CSVs converted to Parquet unchanged (energy still text) |
+| `interim/halfhourly_typed.parquet` | 167,811,461 | `Null` rows dropped; energy cast to `kwh` (`DOUBLE`) |
+| `interim/halfhourly_grid.parquet` | 168,268,119 | Every expected half hour per household; missing slots have `kwh` = NULL |
+| `interim/halfhourly_clean.parquet` | 155,510,640 | Kept months only, all gaps filled; `status` marks each value as real, interpolated or profile-filled |
+| `processed/daily.parquet` | 3,239,805 | Daily kWh and cost, real and filled slot counts, tariff, ACORN, temperature, holiday flag |
+| `processed/monthly.parquet` | 106,225 | One row per household-month: kWh, bill, days, mean temperature, filled slots |
+| `processed/monthly_encoded.parquet` | 106,225 | Monthly table plus 0/1 columns for tariff and ACORN group |
