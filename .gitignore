@@ -241,3 +241,4 @@ reports/**/build/
 *.blg
 *.bcf
 *.run.xml
+**/CLAUDE.md
