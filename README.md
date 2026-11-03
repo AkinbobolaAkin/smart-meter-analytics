@@ -20,17 +20,7 @@ uv sync
 uv run jupyter lab
 ```
 
-Open `notebooks/data_preparation.ipynb` and run all cells. No manual download is needed:
-
-- The first section downloads the Kaggle dataset [Smart meters in London](https://www.kaggle.com/datasets/jeanmidev/smart-meters-in-london) (version 21, about 1 GB) into `data/raw/kaggle/` with `kagglehub`. The dataset is public, so no Kaggle account is required. Later runs skip the download.
-- `Tariffs.xlsx` is already in the repo at `data/raw/Tariffs.xlsx`. It comes from the [London Datastore](https://data.london.gov.uk/dataset/smartmeter-energy-use-data-in-london-households) (CC BY 4.0), which blocks scripted downloads, so we commit it instead of fetching it.
-- It then converts the raw CSVs to Parquet, cleans the data, and writes the outputs to `data/interim/` and `data/processed/`. The CSV conversion takes a few minutes the first time and is skipped on later runs.
-
-Do not put other files in `data/raw/kaggle/`. kagglehub manages that folder and refuses to download into a folder that already holds files it didn't create.
-
 ## Data preparation (Phase 2)
-
-<!-- DRAFT: rewrite in your own words. Tables come from the notebook outputs. Confirm the items marked CHECK. -->
 
 All preparation runs in `notebooks/data_preparation.ipynb`, from the raw CSV files to the tables the forecasting models will use. The raw data holds 167.8 million half-hourly readings from 5,566 London households between November 2011 and February 2014. After cleaning, 5,548 households remain with 106,225 complete household-months, and 99.84% of the half-hourly values behind them are real meter readings. The rest are filled gaps, and a `status` column marks every one of them.
 
@@ -38,13 +28,13 @@ All preparation runs in `notebooks/data_preparation.ipynb`, from the raw CSV fil
 
 The readings come from the Low Carbon London trial run by UK Power Networks. The London Datastore publishes them, and a Kaggle version adds household details, hourly weather and a list of UK bank holidays. The Kaggle download also contains daily and block-level files, but a third party built those and we cannot see how they treated missing readings. We rebuild daily and monthly values ourselves from the half-hourly data, so every number traces back to a step in the notebook. Tariff prices come straight from the London Datastore page.
 
-| Source | File(s) | Description | Origin | Access method | Retrieved | Licence |
-|---|---|---|---|---|---|---|
-| Half-hourly smart meter readings | `halfhourly_dataset/halfhourly_dataset/block_0.csv` to `block_111.csv` | Energy use (kWh per half hour) for 5,566 London households, Nov 2011 to Feb 2014, 167.8M rows. Low Carbon London trial. | UK Power Networks via the London Datastore, repackaged on Kaggle ("Smart meters in London", jeanmidev) | `kagglehub` Python download in the notebook, version 21 pinned, no login | 2026-10-30 **CHECK** | Original data CC BY 4.0 (London Datastore). Kaggle page licence **CHECK** |
-| Household information | `informations_households.csv` | One row per household: tariff group (`stdorToU`), ACORN category and group, source block file | Kaggle dataset (from the trial metadata) | Same `kagglehub` download | 2026-10-30 **CHECK** | As above |
-| Hourly weather | `weather_hourly_darksky.csv` | Hourly London weather (temperature in °C, humidity, wind, etc.), Nov 2011 to Mar 2014, 21,165 rows | Dark Sky API, collected by the Kaggle author (see `darksky_parameters_documentation.html`) | Same `kagglehub` download | 2026-10-30 **CHECK** | Kaggle page licence **CHECK** |
-| UK bank holidays | `uk_bank_holidays.csv` | 25 bank holiday dates with labels, 2012 to 2014 | Compiled by the Kaggle author (source not stated) | Same `kagglehub` download | 2026-10-30 **CHECK** | Kaggle page licence **CHECK** |
-| Tariff prices | `Tariffs.xlsx` and the dataset web page | Flat standard rate 14.228 p/kWh. ToU rates for 2013: Low 3.99, Normal 11.76, High 67.20 p/kWh, with the half-hourly schedule in the xlsx | UK Power Networks, London Datastore: https://data.london.gov.uk/dataset/smartmeter-energy-use-data-in-london-households | Manual browser download from the London Datastore, committed to the repo (the site blocks scripted downloads) | 2026-10-30 | CC BY 4.0 |
+| Source | File(s) | Description | Origin | Access method |
+|---|---|---|---|---|
+| Half-hourly smart meter readings | `halfhourly_dataset/halfhourly_dataset/block_0.csv` to `block_111.csv` | Energy use (kWh per half hour) for 5,566 London households, Nov 2011 to Feb 2014, 167.8M rows. Low Carbon London trial. | UK Power Networks via the London Datastore, repackaged on Kaggle ("Smart meters in London", jeanmidev) | `kagglehub` Python download in the notebook, version 21 pinned, no login |
+| Household information | `informations_households.csv` | One row per household: tariff group (`stdorToU`), ACORN category and group, source block file | Kaggle dataset (from the trial metadata) | Same `kagglehub` download |
+| Hourly weather | `weather_hourly_darksky.csv` | Hourly London weather (temperature in °C, humidity, wind, etc.), Nov 2011 to Mar 2014, 21,165 rows | Dark Sky API, collected by the Kaggle author (see `darksky_parameters_documentation.html`) | Same `kagglehub` download |
+| UK bank holidays | `uk_bank_holidays.csv` | 25 bank holiday dates with labels, 2012 to 2014 | Compiled by the Kaggle author (source not stated) | Same `kagglehub` download |
+| Tariff prices | `Tariffs.xlsx` and the dataset web page | Flat standard rate 14.228 p/kWh. ToU rates for 2013: Low 3.99, Normal 11.76, High 67.20 p/kWh, with the half-hourly schedule in the xlsx | UK Power Networks, London Datastore: https://data.london.gov.uk/dataset/smartmeter-energy-use-data-in-london-households | Manual browser download from the London Datastore, committed to the repo (the site blocks scripted downloads) |
 
 Kaggle URL: https://www.kaggle.com/datasets/jeanmidev/smart-meters-in-london
 
