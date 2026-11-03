@@ -14,7 +14,6 @@ downloaded files include 112 electricity consumption CSV files,
 household information, weather observations, and UK bank holiday
 records. Electricity tariff information was obtained from the London
 Datastore through `Tariffs.xlsx`, included in the project repository.
-The exact retrieval date was not recorded.
 
 The original dataset contained **167,817,021 readings from 5,566
 households**. DuckDB was used to process the large dataset efficiently,
